@@ -45,4 +45,48 @@ pthread_mutex_t lock;               //lock is used for locking the cache
 
 
 cache_element* head;                //pointer to the cache
-int cache_size;             //cache_size denotes the current size of the cache
+int cache_size;             //cache_size denotes the current size of the cache//
+			    //
+			    //
+
+
+
+int main(int argc, char * argv[]) {
+
+	int client_socketId, client_len; // client_socketId == to store the client socket id
+	struct sockaddr_in server_addr, client_addr; // Address of client and server to be assigned
+
+    sem_init(&seamaphore,0,MAX_CLIENTS); // Initializing seamaphore and lock
+    pthread_mutex_init(&lock,NULL); // Initializing lock for cache
+
+
+	if(argc == 2)        //checking whether two arguments are received or not
+	{
+		port_number = atoi(argv[1]);
+	}
+	else
+	{
+		printf("Too few arguments\n");
+		exit(1);
+	}
+
+	printf("Setting Proxy Server Port : %d\n",port_number);
+
+    //creating the proxy socket
+	proxy_socketId = socket(AF_INET, SOCK_STREAM, 0);
+
+	if( proxy_socketId < 0)
+	{
+		perror("Failed to create socket.\n");
+		exit(1);
+	}
+
+
+
+
+
+}
+
+
+
+E37: No write since last change (add ! to override)                                                                                                                                             49,9-30       AllE37: No write since last change (add ! to override)                                                                                                                                             49,9-30       All
