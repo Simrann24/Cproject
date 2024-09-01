@@ -81,7 +81,22 @@ int main(int argc, char * argv[]) {
 		exit(1);
 	}
 
+	int reuse =1;
+	if (setsockopt(proxy_socketId, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+        perror("setsockopt(SO_REUSEADDR) failed\n");
 
+	bzero((char*)&server_addr, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(port_number); // Assigning port to the Proxy
+	server_addr.sin_addr.s_addr = INADDR_ANY; // Any available adress assigned
+
+    // Binding the socket
+	if( bind(proxy_socketId, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0 )
+	{
+		perror("Port is not free\n");
+		exit(1);
+	}
+	printf("Binding on port: %d\n",port_number);
 
 
 
