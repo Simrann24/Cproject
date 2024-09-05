@@ -45,9 +45,8 @@ pthread_mutex_t lock;               //lock is used for locking the cache
 
 
 cache_element* head;                //pointer to the cache
-int cache_size;             //cache_size denotes the current size of the cache//
-			    //
-			    //
+int cache_size;             //cache_size denotes the current size of the cache
+
 int sendErrorMessage(int socket, int status_code)
 {
 	char str[1024];
@@ -369,7 +368,7 @@ int main(int argc, char * argv[]) {
 
     sem_init(&seamaphore,0,MAX_CLIENTS); // Initializing seamaphore and lock
     pthread_mutex_init(&lock,NULL); // Initializing lock for cache
-
+    
 
 	if(argc == 2)        //checking whether two arguments are received or not
 	{
@@ -393,10 +392,10 @@ int main(int argc, char * argv[]) {
 	}
 
 	int reuse =1;
-	if (setsockopt(proxy_socketId, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+	if (setsockopt(proxy_socketId, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0) 
         perror("setsockopt(SO_REUSEADDR) failed\n");
 
-	bzero((char*)&server_addr, sizeof(server_addr));
+	bzero((char*)&server_addr, sizeof(server_addr));  
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port_number); // Assigning port to the Proxy
 	server_addr.sin_addr.s_addr = INADDR_ANY; // Any available adress assigned
@@ -409,7 +408,7 @@ int main(int argc, char * argv[]) {
 	}
 	printf("Binding on port: %d\n",port_number);
 
-	// Proxy socket listening to the requests
+    // Proxy socket listening to the requests
 	int listen_status = listen(proxy_socketId, MAX_CLIENTS);
 
 	if(listen_status < 0 )
@@ -424,9 +423,9 @@ int main(int argc, char * argv[]) {
     // Infinite Loop for accepting connections
 	while(1)
 	{
-
+		
 		bzero((char*)&client_addr, sizeof(client_addr));			// Clears struct client_addr
-		client_len = sizeof(client_addr);
+		client_len = sizeof(client_addr); 
 
         // Accepting the connections
 		client_socketId = accept(proxy_socketId, (struct sockaddr*)&client_addr,(socklen_t*)&client_len);	// Accepts connection
@@ -447,7 +446,7 @@ int main(int argc, char * argv[]) {
 		printf("Client is connected with port number: %d and ip address: %s \n",ntohs(client_addr.sin_port), str);
 		//printf("Socket values of index %d in main function is %d\n",i, client_socketId);
 		pthread_create(&tid[i],NULL,thread_fn, (void*)&Connected_socketId[i]); // Creating a thread for each client accepted
-		i++;
+		i++; 
 	}
 	close(proxy_socketId);									// Close socket
  	return 0;
@@ -516,47 +515,55 @@ void remove_cache_element(){
 	printf("Remove Cache Lock Unlocked %d\n",temp_lock_val); 
 }
 
-int add_cache_element(char* data,int size,char* url){
+int add_cache_element(char* data, int size, char* url) {
     // Adds element to the cache
-	// sem_wait(&cache_lock);
     int temp_lock_val = pthread_mutex_lock(&lock);
-	printf("Add Cache Lock Acquired %d\n", temp_lock_val);
-    int element_size=size+1+strlen(url)+sizeof(cache_element); // Size of the new element which will be added to the cache
-    if(element_size>MAX_ELEMENT_SIZE){
-		//sem_post(&cache_lock);
-        // If element size is greater than MAX_ELEMENT_SIZE we don't add the element to the cache
-        temp_lock_val = pthread_mutex_unlock(&lock);
-		printf("Add Cache Lock Unlocked %d\n", temp_lock_val);
-		// free(data);
-		// printf("--\n");
-		// free(url);
-        return 0;
+    printf("Add Cache Lock Acquired %d\n", temp_lock_val);
+
+    int element_size = size + 1 + strlen(url) + sizeof(cache_element); // Calculate size of the new element
+    
+    // If element size is larger than the allowed max element size, reject the addition
+    if (element_size > MAX_ELEMENT_SIZE) {
+        printf("Element too large to cache.\n");
+        pthread_mutex_unlock(&lock);
+        return -1;
     }
-    else
-    {   while(cache_size+element_size>MAX_SIZE){
-            // We keep removing elements from cache until we get enough space to add the element
-            remove_cache_element();
-        }
-        cache_element* element = (cache_element*) malloc(sizeof(cache_element)); // Allocating memory for the new cache element
-        element->data= (char*)malloc(size+1); // Allocating memory for the response to be stored in the cache element
-		strcpy(element->data,data); 
-        element -> url = (char*)malloc(1+( strlen( url )*sizeof(char)  )); // Allocating memory for the request to be stored in the cache element (as a key)
-		strcpy( element -> url, url );
-		element->lru_time_track=time(NULL);    // Updating the time_track
-        element->next=head; 
-        element->len=size;
-        head=element;
-        cache_size+=element_size;
-        temp_lock_val = pthread_mutex_unlock(&lock);
-		printf("Add Cache Lock Unlocked %d\n", temp_lock_val);
-		//sem_post(&cache_lock);
-		// free(data);
-		// printf("--\n");
-		// free(url);
-        return 1;
+
+    // While the cache size plus new element exceeds maximum cache size, remove elements (LRU)
+    while (cache_size + element_size > MAX_SIZE) {
+        remove_cache_element(); // Remove least recently used element
     }
+
+    // Allocate memory for the new cache element
+    cache_element* new_element = (cache_element*)malloc(sizeof(cache_element));
+    if (!new_element) {
+        perror("Failed to allocate memory for cache element\n");
+        pthread_mutex_unlock(&lock);
+        return -1;
+    }
+
+    // Fill the new cache element data
+    new_element->data = (char*)malloc(size);
+    memcpy(new_element->data, data, size);
+    new_element->len = size;
+
+    new_element->url = (char*)malloc(strlen(url) + 1);
+    strcpy(new_element->url, url);
+
+    // Set the LRU time to current time
+    new_element->lru_time_track = time(NULL);
+
+    // Add new element at the head of the cache list
+    new_element->next = head;
+    head = new_element;
+
+    // Update cache size
+    cache_size += element_size;
+
+    printf("Added to cache: %s\n", url);
+    
+    pthread_mutex_unlock(&lock);
+    printf("Add Cache Lock Released\n");
+
     return 0;
 }
-
-
-E37: No write since last change (add ! to override)                                                                                                                                             49,9-30       AllE37: No write since last change (add ! to override)                                                                                                                                             49,9-30       All
