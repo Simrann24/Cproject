@@ -8,9 +8,9 @@ all: proxy
 proxy: proxy_parse.o main.o utils/connection.o utils/error_msgs.o utils/thread.o utils/cache_element.o
 	$(CC) $(CFLAGS) -o proxy proxy_parse.o main.o utils/connection.o utils/error_msgs.o utils/thread.o utils/cache_element.o -lpthread
 
-# Compile proxy_parse.c into proxy_parse.o
-proxy_parse.o: proxy_parse.c proxy_parse.h
-	$(CC) $(CFLAGS) -c proxy_parse.c -o proxy_parse.o
+# Compile Libraries/proxy_parse.c into proxy_parse.o
+proxy_parse.o: Libraries/proxy_parse.c Libraries/proxy_parse.h
+	$(CC) $(CFLAGS) -c Libraries/proxy_parse.c -o proxy_parse.o
 
 # Compile main.c into main.o
 main.o: main.c
@@ -38,5 +38,5 @@ clean:
 
 # Create a tarball of the source files
 tar:
-	tar -cvzf ass1.tgz main.c README Makefile proxy_parse.c proxy_parse.h utils/*.c utils/*.h Structures/*.c Structures/*.h
+	tar -cvzf ass1.tgz main.c README Makefile Libraries/*.c Libraries/*.h utils/*.c utils/*.h Structures/*.c Structures/*.h
 

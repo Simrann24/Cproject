@@ -1,9 +1,19 @@
 #include <stdio.h>
 
-#include "../proxy_parse.h"
+#include "../Libraries/proxy_parse.h"
 
 #include "cache_element.h"
 
+// cache_element.c
+
+int port_number = 8080; // default port
+int proxy_socketId;
+pthread_t tid[MAX_CLIENTS];
+pthread_mutex_t lock;
+sem_t seamaphore;
+
+cache_element* head = NULL;
+int cache_size = 0;
 
 cache_element* find(char* url){
 
