@@ -25,7 +25,7 @@ void* thread_fn(void* socketNew)
 	sem_wait(&seamaphore);
 	int p;
 	sem_getvalue(&seamaphore,&p);
-	printf("semaphore value:%d\n",p);
+	printf("VALUE OF SEMAPHORE : %d\n",p);
 
     	int* t= (int*)(socketNew);
 	int socket=*t;           // Socket is socket descriptor of the connected Client
@@ -35,7 +35,7 @@ void* thread_fn(void* socketNew)
 	char *buffer = (char*)calloc(MAX_BYTES,sizeof(char));	// Creating buffer of 4kb for a client
 
 
-	bzero(buffer, MAX_BYTES);								// Making buffer zero
+	bzero(buffer, MAX_BYTES);			        // Making buffer zero
 	bytes_send_client = recv(socket, buffer, MAX_BYTES, 0); // Receiving the Request of client by proxy server
 
 	while(bytes_send_client > 0)
@@ -59,7 +59,7 @@ void* thread_fn(void* socketNew)
     //tempReq, buffer both store the http request sent by client
 	for (int i = 0; i < strlen(buffer); i++)
 	{
-		tempReq[i] = buffer[i];
+		tempReq[i] = buffer[i];          
 	}
 
 	//checking for the request in cache
@@ -78,7 +78,7 @@ void* thread_fn(void* socketNew)
 			}
 			send(socket,response,MAX_BYTES,0);
 		}
-		printf("Data retrived from the Cache\n\n");
+		printf("DATA RETRIEVED SUCCESSFULLY FROM CACHE\n\n");
 		printf("%s\n\n",response);
 		// close(socketNew);
 		// sem_post(&seamaphore);
@@ -94,7 +94,7 @@ void* thread_fn(void* socketNew)
 
 		if (ParsedRequest_parse(request, buffer, len) < 0)
 		{
-		   	printf("Parsing failed\n");
+		   	printf("PARSING FAILED\n");
 		}
 		else
 		{
@@ -132,7 +132,7 @@ void* thread_fn(void* socketNew)
 	}
 	else if(bytes_send_client == 0)
 	{
-		printf("Client disconnected!\n");
+		printf("CLIENT DISCONNECTED !\n");
 	}
 
 	shutdown(socket, SHUT_RDWR);
@@ -141,7 +141,9 @@ void* thread_fn(void* socketNew)
 	sem_post(&seamaphore);
 
 	sem_getvalue(&seamaphore,&p);
-	printf("Semaphore post value:%d\n",p);
+	printf("SEMAPHORE POST VALUE : %d\n",p);
+
+	printf("\n------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 	free(tempReq);
 	return NULL;
 }

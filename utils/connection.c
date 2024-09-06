@@ -132,7 +132,7 @@ int handle_request(int clientSocket, ParsedRequest *request, char *tempReq)
 	temp_buffer[temp_buffer_index]='\0';
 	free(buf);
 	add_cache_element(temp_buffer, strlen(temp_buffer), tempReq);
-	printf("Done\n");
+	printf("OPERATION COMPLETED\n");
 	free(temp_buffer);
 
 

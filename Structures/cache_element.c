@@ -17,32 +17,33 @@ int cache_size = 0;
 
 cache_element* find(char* url){
 
+	printf("------------------------       -----------------------------      -------------------------------------------\n");
 // Checks for url in the cache if found returns pointer to the respective cache element or else returns NULL
     cache_element* site=NULL;
 	//sem_wait(&cache_lock);
     int temp_lock_val = pthread_mutex_lock(&lock);
-	printf("Remove Cache Lock Acquired %d\n",temp_lock_val);
+	printf("REMOVE CACHE LOCK ACQUIRED : %d\n",temp_lock_val);
     if(head!=NULL){
         site = head;
         while (site!=NULL)
         {
             if(!strcmp(site->url,url)){
-				printf("LRU Time Track Before : %ld", site->lru_time_track);
-                printf("\nurl found\n");
+				printf("LRU TIME TRACK BEFORE : %ld\n", site->lru_time_track);
+                printf("\nURL FOUND\n");
 				// Updating the time_track
 				site->lru_time_track = time(NULL);
-				printf("LRU Time Track After : %ld", site->lru_time_track);
+				printf("LRU TIME TRACK AFTER : %ld\n\n", site->lru_time_track);
 				break;
             }
             site=site->next;
         }
     }
 	else {
-    printf("\nurl not found\n");
+    printf("\nURL NOT FOUND \n\n");
 	}
 	//sem_post(&cache_lock);
     temp_lock_val = pthread_mutex_unlock(&lock);
-	printf("Remove Cache Lock Unlocked %d\n",temp_lock_val);
+	printf("REMOVE CACHE LOCK UNLOCKED : %d\n\n",temp_lock_val);
     return site;
 }
 
@@ -53,7 +54,7 @@ void remove_cache_element(){
 	cache_element * temp;	// Cache element to remove
     //sem_wait(&cache_lock);
     int temp_lock_val = pthread_mutex_lock(&lock);
-	printf("Remove Cache Lock Acquired %d\n",temp_lock_val);
+
 	if( head != NULL) { // Cache != empty
 		for (q = head, p = head, temp =head ; q -> next != NULL;
 			q = q -> next) { // Iterate through entire cache and search for oldest time track
@@ -75,13 +76,13 @@ void remove_cache_element(){
 	}
 	//sem_post(&cache_lock);
     temp_lock_val = pthread_mutex_unlock(&lock);
-	printf("Remove Cache Lock Unlocked %d\n",temp_lock_val);
+	printf("REMOVE CACHE LOCK UNLOCKED : %d\n\n",temp_lock_val);
 }
 
 int add_cache_element(char* data, int size, char* url) {
     // Adds element to the cache
     int temp_lock_val = pthread_mutex_lock(&lock);
-    printf("Add Cache Lock Acquired %d\n", temp_lock_val);
+    printf("ADD CACHE LOCK ACQUIRED : %d\n\n", temp_lock_val);
 
     int element_size = size + 1 + strlen(url) + sizeof(cache_element); // Calculate size of the new element
 
@@ -123,10 +124,10 @@ int add_cache_element(char* data, int size, char* url) {
     // Update cache size
     cache_size += element_size;
 
-    printf("Added to cache: %s\n", url);
+    printf("ADDED TO CACHE : %s\n", url);
 
     pthread_mutex_unlock(&lock);
-    printf("Add Cache Lock Released\n");
+    printf("ADD CACHE LOCK RELEASED\n");
 
     return 0;
 }

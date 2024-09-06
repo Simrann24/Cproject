@@ -30,7 +30,10 @@ int main(int argc, char * argv[]) {
 
         sem_init(&seamaphore,0,MAX_CLIENTS); // Initializing seamaphore and lock
         pthread_mutex_init(&lock,NULL); // Initializing lock for cache
-    
+					//
+
+
+	printf("-------------------------------------------------------------------------------------------------------------------------------------\n\n");
 
 	if(argc == 2)        
 	{
@@ -42,7 +45,7 @@ int main(int argc, char * argv[]) {
 		exit(1);
 	}
 
-	printf("Setting Proxy Server Port : %d\n",port_number);
+	printf("SETTING PROXY SERVER PORT : %d\n",port_number);
 
     	proxy_socketId = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -67,7 +70,7 @@ int main(int argc, char * argv[]) {
 		perror("Port is not free\n");
 		exit(1);
 	}
-	printf("Binding on port: %d\n",port_number);
+	printf("Binding ON PORT : %d\n",port_number);
 
     // Proxy socket listening to the requests
 	int listen_status = listen(proxy_socketId, MAX_CLIENTS);
@@ -84,6 +87,7 @@ int main(int argc, char * argv[]) {
     // Infinite Loop for accepting connections
 	while(1)
 	{
+		printf("-------------------------------------------------------------------------------------------------------------------------------------\n\n");
 		
 		bzero((char*)&client_addr, sizeof(client_addr));			// Clears struct client_addr
 		client_len = sizeof(client_addr); 
@@ -104,10 +108,13 @@ int main(int argc, char * argv[]) {
 		struct in_addr ip_addr = client_pt->sin_addr;
 		char str[INET_ADDRSTRLEN];										// INET_ADDRSTRLEN: Default ip address size
 		inet_ntop( AF_INET, &ip_addr, str, INET_ADDRSTRLEN );
-		printf("Client is connected with port number: %d and ip address: %s \n",ntohs(client_addr.sin_port), str);
-		//printf("Socket values of index %d in main function is %d\n",i, client_socketId);
+		printf("CLIENT IS CONNECTED WITH PORT NUMBER : %d AND IP ADDRESS : %s \n",ntohs(client_addr.sin_port), str);
+		
 		pthread_create(&tid[i],NULL,thread_fn, (void*)&Connected_socketId[i]); // Creating a thread for each client accepted
 		i++; 
+
+		printf("-------------------------------------------------------------------------------------------------------------------------------------\n\n");
+
 	}
 	close(proxy_socketId);									// Close socket
  	return 0;
